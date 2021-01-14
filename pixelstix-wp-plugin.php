@@ -2,7 +2,7 @@
 /*
 Plugin Name: PixelStix Mural Platform by PixelStix
 Plugin URI: https://www.pixelstix.com/pixelstix-mural-platform-wp-plugin
-Description: Import the features of the PixelStix Mural Platform into your wordpress site (APK Key required)
+Description: Import the features of the PixelStix Mural Platform into your wordpress site (API Key required)
 Version: 1.0
 Author: Matthew Walker
 Author URI: http://www.pixelstix.com/
@@ -89,6 +89,7 @@ function pixelstix_plugin_setting_map_shortcode()
     echo "<tr style='border:3px dashed black;'><td>required<strong> map_name=</strong></td><td>[name-of-pixelstix-map]</td></tr>";
     echo "<tr style='border:3px dashed black;'><td>optional<strong> size=</strong></td><td>small,medium,large</td></tr>";
     echo "<tr style='border:3px dashed black;'><td>optional<strong> mural_name=</strong></td><td>[name-of-individual-mural]</td></tr>";
+    echo "<tr style='border:3px dashed black;'><td>optional<strong> pin_type=</strong></td><td>&lt;empty&gt;,basic</td></tr>";
     echo "</table>";
     echo "<br/><i>example: [pixelstix_map map_name=\"morningbreath\" size=\"large\" mural_name=\"Morning Breath 2019\"]</i>";
 }
@@ -117,9 +118,11 @@ function pixelstix_maps_shortcode($atts){
     $map_name=$atts["map_name"];
     $size=strtolower($atts["size"]);
     $mural_name=strtolower($atts["mural_name"]);
+    $pin_type=strtolower($atts["pin_type"]);
     $size_css = "";
     $pixelstix_map=[];
     $valid=true;
+    $uniq_id = rand();
 
     //var_dump($atts);
 
@@ -197,11 +200,11 @@ function pixelstix_maps_shortcode($atts){
         echo ' <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>';
         echo ' <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>';
         //echo '<script src="'.esc_url(plugins_url("scripts/leaflet-providers.js",__FILE__)).'"></script>';
-        echo '<div id="mapid" style="'.$size_css.'"></div>';
+        echo '<div id="mapid'.$uniq_id.'" style="'.$size_css.'"></div>';
         ?>
         <script type="text/javascript">
 
-            var muralmap = L.map('mapid').setView([<?= $pixelstix_map[0]['lat'] ?>,<?= $pixelstix_map[0]['lon'] ?>], 13);
+            var muralmap = L.map('mapid<?php echo $uniq_id ?>').setView([<?= $pixelstix_map[0]['lat'] ?>,<?= $pixelstix_map[0]['lon'] ?>], 13);
             L.tileLayer(
                 "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png",
                 {
@@ -217,11 +220,26 @@ function pixelstix_maps_shortcode($atts){
                 }
             ).addTo(muralmap);
 
+            var pixelstixIcon = L.icon({
+                iconUrl: 'https://cdn.discordapp.com/attachments/661388892359884830/798767395971399701/p_logo_final_from_josh_256x256.png',
+                //shadowUrl: 'https://cdn.discordapp.com/attachments/661388892359884830/798768181383659520/p_logo_final_from_josh_256x256_desaturated.png',
+
+                iconSize:     [38, 38], // size of the icon
+                //shadowSize:   [50, 64], // size of the shadow
+                iconAnchor:   [0, 0], // point of the icon which will correspond to marker's location
+                //shadowAnchor: [4, 62],  // the same for the shadow
+                popupAnchor:  [0,0] // point from which the popup should open relative to the iconAnchor
+            });
+
             //customizations based on data from mural platform api
             mural_markers = [];
             <?php
                 foreach($pixelstix_map as $i=>$mapitem){
-                    echo "mural_markers.push( L.marker( [${mapitem['lat']},${mapitem['lon']}] ).bindPopup('".$mapitem['alias']."') );";
+                    if($pin_type == "basic") {
+                        echo "mural_markers.push( L.marker( [${mapitem['lat']},${mapitem['lon']}] ).bindPopup('".$mapitem['alias']."') );";
+                    }else {
+                        echo "mural_markers.push( L.marker( [${mapitem['lat']},${mapitem['lon']}],{icon: pixelstixIcon} ).bindPopup('".$mapitem['alias']."') );";
+                    }
                 }
             ?>
             var fg = L.featureGroup(mural_markers).addTo(muralmap);
