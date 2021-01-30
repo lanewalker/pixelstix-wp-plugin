@@ -50,7 +50,7 @@ function pixelstix_render_plugin_settings_page() {
 //API SECTION TEXT
 function pixelstix_plugin_api_section_text()
 {
-    echo '<p>Enter your PixelStix Mural Platform API Key below. <a href="https://www.pixelstix.com/pixelstix-mural-platform-api">For more info click here.</a></p>';
+    echo '<p>Enter your PixelStix Platform API Key below. <a href="https://www.pixelstix.com/pixelstix-mural-platform-api">For more info click here.</a></p>';
 }
 //API FIELD
 function pixelstix_plugin_setting_api_key()
@@ -98,9 +98,10 @@ function pixelstix_plugin_setting_map_shortcode()
 function pixelstix_plugin_options_validate($input)
 {
     $newinput['api_key'] = trim($input['api_key']);
-    if (!preg_match('/^[a-z0-9]{16}$/i', $newinput['api_key'])) {
-        $newinput['api_key'] = '';
-    }
+    //MW: 2021-01-30 we are using rapidapi for the moment and I can't be certain that their keys will comply with this regex
+//    if (!preg_match('/^[a-z0-9]{16}$/i', $newinput['api_key'])) {
+//        $newinput['api_key'] = '';
+//    }
     $newinput['map_type'] = $input['map_type'];
 
     return $newinput;
@@ -157,16 +158,20 @@ function pixelstix_maps_shortcode($atts){
         //get the lat/lon items for this pixelstix map
         $curl = curl_init();
 
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.pixelstix.com/api/v2/public/tags/tag_name/".$map_name."?api_key=".$api_key,
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://pixelstix.p.rapidapi.com/api/v2/public/tags/tag_name/${map_name}",
             CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_TIMEOUT => 30,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => "GET",
-        ));
+            CURLOPT_HTTPHEADER => [
+                "x-rapidapi-host: pixelstix.p.rapidapi.com",
+                "x-rapidapi-key: ${api_key}"
+            ],
+        ]);
 
         $response = curl_exec($curl);
 
