@@ -184,6 +184,8 @@ function pixelstix_maps_shortcode($atts){
             $pixelstix_map[$i]["lat"]=$item["lat"];
             $pixelstix_map[$i]["lon"]=$item["lon"];
             $pixelstix_map[$i]["alias"]=addslashes($item["alias"]);
+            $pixelstix_map[$i]["thumbnail_default"]=addslashes($item["web_location"][0]["thumbnail_default"]);
+            $pixelstix_map[$i]["location"]=addslashes($item["web_location"][0]["location"]);
         }
 
         //if the mural attribute was specified, attempt to isolate just that mural
@@ -243,8 +245,7 @@ function pixelstix_maps_shortcode($atts){
                     if($pin_type == "basic") {
                         echo "mural_markers.push( L.marker( [${mapitem['lat']},${mapitem['lon']}] ).bindPopup('".$mapitem['alias']."') );";
                     }else {
-                        echo "mural_markers.push( L.marker( [${mapitem['lat']},${mapitem['lon']}],{icon: pixelstixIcon} ).bindPopup('".$mapitem['alias']."') );";
-                    }
+                        echo "mural_markers.push( L.marker( [${mapitem['lat']},${mapitem['lon']}],{icon: pixelstixIcon} ).bindPopup('<a href=${mapitem['location']} target=_blank><img width=300 src=${mapitem['thumbnail_default']}><br/><strong>${mapitem['alias']}</strong<br/><p>Click to Open PixelStix Smart Plaque</p></a>') );";                    }
                 }
             ?>
             var fg = L.featureGroup(mural_markers).addTo(muralmap);
