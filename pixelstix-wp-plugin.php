@@ -228,7 +228,7 @@ function pixelstix_maps_shortcode($atts){
             ).addTo(muralmap);
 
             var pixelstixIcon = L.icon({
-                iconUrl: 'https://cdn.discordapp.com/attachments/661388892359884830/798767395971399701/p_logo_final_from_josh_256x256.png',
+                iconUrl: 'https://content.pixelstix.com/assets/images/logo.png',
                 //shadowUrl: 'https://cdn.discordapp.com/attachments/661388892359884830/798768181383659520/p_logo_final_from_josh_256x256_desaturated.png',
 
                 iconSize:     [38, 38], // size of the icon
